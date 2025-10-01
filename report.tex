@@ -157,7 +157,6 @@ Preostane še iskanje sinhronizacije v signalu, da najdemo začetek vsake vrstic
 V koreliranem rezultatu opazimo, da pričakovano, vrednost okoli točke, kjer se nahaja sinhronizacija narašča. V prvi iteraciji smo uporabili kot začetek vrstice maksimum korelacije v intervalu $2080$ pikslov. To je povzročilo kar precej težav, saj kot vidimo v generiranem signalu ima precej visoko vrednost tudi korelacija ob sinhronizaciji B. V izogib temu pogledamo razliko med sosednjima vrednostima. S tem dobimo v intervalu $2080$ pikslov dva vrhova. Prvi, ki je na Sliki \ref{fig:sync_corr} jasno večji pripada sinhronizaciji A in drugi manjši pripada sinhronizaciji B. Tako lahko iz Slike \ref{fig:sync_corr} razberemo, da se pri generiranem signalu kot pričakovano vrhovi ujemajo z intervalom $\SI{0.5}{\second}$. Na posnetem signalu pa opazimo, da je signal rahlo zamaknjen in se vsaka vrstica začne malo pred začetkom intervala $\SI{0.5}{\second}$ glede na čas v posnetku.
 
 Vsako vrstico nato pretvorimo v sliko tako, da normaliziramo glede na najmanjšo in največjo vrednostjo in porazdelimo vrednosti amplitude med $0$ in $255$ ter tako spremenimo signal v `grayscale` format slike. Običajno bi tu za translacijo amplitude v `grayscale` uporabili vrednosti iz telemetrije, ki bi določila točne vrednosti, a je za potrebe te naloge normalizacija delovala dovolj dobro.
-\newpage
 \section{Rezultati}
 Poglejmo še nekaj slik, ki jih na tak način dekodiramo iz posnetih signalov. 
 \begin{figure}[H]
@@ -180,14 +179,13 @@ Poglejmo še nekaj slik, ki jih na tak način dekodiramo iz posnetih signalov.
 Še en primer posnet nad Slovenijo.
 \begin{figure}[H]
     \centering
-    \begin{subfigure}[b]{0.8\textwidth}
+    \begin{subfigure}[b]{0.49\textwidth}
         \centering
         \includegraphics[width=\textwidth]{slovenia.pdf}
     \end{subfigure}
 	\caption{Signal posnet iz NOAA satelita nad Slovenijo.}
     \label{fig:out_example0}
 \end{figure}
-\newpage
 Za konec pa še nekaj enkodiranih in nato dekodiranih slik, kjer je slika v kanalu B inverz slike v kanalu A. 
 \begin{figure}[H]
     \centering
