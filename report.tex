@@ -43,9 +43,9 @@ V tem poročilu je predstavljen postopek enkodiranja in dekodiranja NOAA APT (Au
 
 Zaradi dostopnosti je kljub starosti tehnologija še vedno popularna med radioamaterji in raziskovalci. Znotraj tega poročila najprej opišemo ključne korake enkodiranja in nato še dekodiranja. Poseben poudarek je na amplitudni demodulizaciji, sinhronizaciji in vzorčenju, saj so ti koraki ključni za kvaliteto slike.
 
-V okviru naloge sem implementiral lastno programersko rešitev za dekodiranje in enkodiranje NOAA APT signala, s katero sem dekodiral prej posnete signale, ter enkodiral oziroma dekodiral poljubne slike. Vsa koda je na voljo v \href{https://github.com/NotNotLuka/NOAA-APT}{tem github repozitoriju}.
+V okviru naloge sem implementiral lastno programersko rešitev za dekodiranje in enkodiranje NOAA APT signala, s katero sem dekodiral prej posnete signale, ter enkodiral oziroma dekodiral poljubne slike. Vsa koda je na voljo v \href{https://github.com/NotNotLuka/NOAA-APT}{tem github repozitoriju}\cite{git_repo}.
 \section{Enkodiranje}
-Signal je oddajan po eno vrstico na enkrat oziroma v primeru satelitov kot nekakšen `video`. Vsaka vrstica je sestavljena iz dveh slikovnih kanalov A in B, telemetrije in sinhronizacijskih podatkov. Vsako sekundo sta prenešeni dve vrstici, kjer je vsaka vrstica sestavljena iz $2080$ pikslov. Vsak slikovni kanal ima $909$ pikslov preostanek pa je namenjen telemtriji oziroma sinhronizaciji. Točna razpodelitev je na voljo v tabeli \ref{tab:signal_structure} \cite{sigidwiki}.
+Signal je oddajan po eno vrstico naenkrat oziroma v primeru satelitov kot nekakšen `video`. Vsaka vrstica je sestavljena iz dveh slikovnih kanalov A in B, telemetrije in sinhronizacijskih podatkov. Vsako sekundo sta prenešeni dve vrstici, kjer je vsaka vrstica sestavljena iz $2080$ pikslov. Vsak slikovni kanal ima $909$ pikslov preostanek pa je namenjen telemetriji oziroma sinhronizaciji. Točna razporeditev je na voljo v Tabeli \ref{tab:signal_structure} \cite{sigidwiki}.
 \begin{table}[H]
 \centering
 \begin{tabular}{|l|c|}
@@ -67,7 +67,7 @@ Telemetrija B & 45  \\ \hline
 \caption{Struktura vrstice v formatu NOAA APT. Vir: \cite{sigidwiki}}
 \label{tab:signal_structure}
 \end{table}
-Signal sestavimo tako, da za najnižjo vrednost vzamemo $-1$ in za največjo $1$. V bitni reprezentaciji zapišemo sinhronizacijo A kot $000011001100110011001100110011000000000$, kjer $0$ predstavlja vrednost $-1$, podobno za B kot $000011100111001110011100111001110011100$.  Presledek pa preprosto zapolnimo z vrednostmi $-1$ \cite{sigidwiki}. Za potrebe te naloge enako storimo s telemetrijo, v dejanskih primerih je telemetrija zapolnjena s kalibracijskimi podatki za temnost, podatki o temperaturi in kanalu slike \cite{bernardi}. Izgled sinhronizacij s presledkom je na sliki \ref{fig:sync_frames}
+Signal sestavimo tako, da za najnižjo vrednost vzamemo $-1$ in za največjo $1$. V bitni reprezentaciji zapišemo sinhronizacijo A kot $000011001100110011001100110011000000000$, kjer $0$ predstavlja vrednost $-1$, podobno za B kot $000011100111001110011100111001110011100$.  Presledek pa preprosto zapolnimo z vrednostmi $-1$ \cite{sigidwiki}. Za potrebe te naloge enako storimo s telemetrijo, v dejanskih primerih je telemetrija zapolnjena s kalibracijskimi podatki za temnost, podatki o temperaturi in kanalu slike \cite{bernardi}. Izgled sinhronizacij s presledkom je na Sliki \ref{fig:sync_frames}
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.45\textwidth}
@@ -87,7 +87,7 @@ Signal sestavimo tako, da za najnižjo vrednost vzamemo $-1$ in za največjo $1$
 \end{figure}
 Za slikovni del si najprej izberemo sliki in ju spremenimo v format `grayscale` s širino $909$, kjer je vsak piksel predstavljen z vrednostjo med $0$ in $255$. Vrednosti nato normaliziramo na interval $-1$ in $1$. Tako s sinhronizacijskim delom in telemetrijo sestavimo signal za vsako vrstico, ki jih nato zaporedno združimo v sporočilni signal.
 
-Za lažje oddajanje in sprejemanje je potrebna še amplitudna modulacija podatkov. Sestavljen signal, ki smo ga pridobili s prejšnjim postopkom označimo z $m(t)$ in predstavlja naše sporočilo. Za amplitudno modulacijo definiramo najprej nosilni val
+Za lažje oddajanje in sprejemanje je potrebna še amplitudna modulacija podatkov. V teoriji naše sporočilo predstavlja zvezna funkcija $m(t)$, ki jo amplitudno moduliramo. Najprej definiramo nosilni val
 \begin{equation*}
 	c(t) = A \sin{(2\pi f_c t)}\text{,}
 \end{equation*}
@@ -95,14 +95,18 @@ kjer je $f_c$ nosilna frekvenca in je v NOAA APT formatu enaka vrednosti $f_c=\S
 \begin{equation*}
 	y(t) = (1 + km(t))c(t)\text{,}
 \end{equation*}
-kjer k definiramo kot modulacijski indeks z vrednostjo $k=0.7$ \cite{am_wiki}. Formulo nato diskretno uporabimo na celotnem signalu. Primer signala je na sliki \ref{fig:signal_example}. 
+kjer $k$ definiramo kot modulacijski indeks z vrednostjo $k=0.7$ \cite{am_wiki}. Za amplitudno modulacijo prej konstruiranega sporočila diskretiziramo čas z vzorčenjem $t_i=i\Delta t$, kjer je $\Delta t = 1 / f_s$ in $f_s$ vzorčna frekvenca izhodnega signala. S tem preoblikujemo formulo v 
+\begin{equation*}
+	y[i] = (1 + km[i])c[i],
+\end{equation*}
+kjer z indeksom $i$ označujemo vrednost funkcije ob $i$-tem vzorcu. Primer signala je na Sliki \ref{fig:signal_example}. 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{signal_example.pdf}
     \caption{$\SI{3}{\second}$ izrez primera NOAA APT signala.}
     \label{fig:signal_example}
 \end{figure}
-Po tem postopku dobimo signal s frekvenco $\SI{4160}{\hertz}$, kar je precej majhna frekvenca, saj je že ustrezna Nyquistova frekvenca enaka $\SI{2180}{\hertz}$, kar je manjše od nosilne frekvence. Da povečamo frekvenco, lahko na začetku ustrezno spremenimo širino slike. V vzorcih za sinhronizacijo pa ponovimo posamezne piksle in tako ohranimo vzorec. 
+Glede na sestavljen signal je vzorčna frekvenca izhodnega signala $f_s=\SI{4160}{\hertz}$, kar je precej majhna frekvenca, saj je že ustrezna Nyquistova frekvenca enaka $\SI{2180}{\hertz}$, kar je manjše od nosilne frekvence. Da povečamo frekvenco, lahko na začetku ustrezno spremenimo širino slike. V vzorcih za sinhronizacijo pa ponovimo posamezne piksle in tako ohranimo vzorec. 
 \section{Dekodiranje}
 Preden začnemo z dekodiranjem je smiselno preveriti ali posnetek sploh vsebuje željene podatke. To lahko storimo tako, da posnetek transformiramo v frekvenčno domeno s pomočjo hitre Fourierove transformacije in preverimo, da je vrh pri nosilni frekvenci. Na sliki \ref{fig:fft} lahko razberemo, da vrh spektra ustreza že prej omenjeni nosilni frekvenci $f_c=\SI{2400}{\hertz}$.
 \begin{figure}[H]
@@ -111,7 +115,7 @@ Preden začnemo z dekodiranjem je smiselno preveriti ali posnetek sploh vsebuje 
     \caption{Spekter vhodnega signala.}
     \label{fig:fft}
 \end{figure}
-Prvi korak dekodiranja je vzorčenje vhodnega posnetka iz vhodne frekvence $f_v$ na $f_i=\SI{20800}{\hertz}$. Da ne izgubimo informacije o sliki tega ne smemo storiti z vgrajeno funkcijo \texttt{resample}, saj ta uporablja Fourierovo transformacijo, ki predpostavi periodičnost signala. Temu se izognemo tako, da sledimo naslednjemu postopku:
+Prvi korak dekodiranja je vzorčenje vhodnega posnetka iz vhodne frekvence $f_v$, ki je določena s kvaliteto posnetka, na $f_i=\SI{20800}{\hertz}$. Da ne izgubimo informacije o sliki tega ne smemo storiti z vgrajeno funkcijo \texttt{scipy.signal.resample}, saj ta uporablja Fourierovo transformacijo, ki predpostavi periodičnost signala. Temu se izognemo tako, da sledimo naslednjemu postopku:
 \begin{itemize}
   \item Izračunamo interpolacijski faktor $L$ in decimacijski faktor $M$, ki čim bolje ustrezata okrajšanemu ulomku $f_i/f_v\approx L/M$.
   \item Sestaviš nizkopasovni filter s Kaiserjevim oknom in funkcijo sinc.
@@ -123,7 +127,7 @@ Naslednji korak je amplitudna demodulacija, h kateri pristopimo z vrednostima dv
 	y[i-1] = m[i-1]\sin{(2\pi f_c t_0 + \alpha)}\text{,} \\
 	y[i] = m[i]\sin{(2\pi f_c (t_0 + \Delta t) + \alpha)}\text{.}
 \end{align*}
-Za nadaljevaje predpostavimo, da je $\Delta t$ majhen oziroma s predpostavko, da je vzorčna frekvenca visoka. S tem lahko rečemo, da je $m[i] \approx m[i-1]$ in izpeljemo naslednjo enačbo 
+Za nadaljevanje predpostavimo, da je $\Delta t$ majhen oziroma s predpostavko, da je vzorčna frekvenca visoka. S tem lahko rečemo, da je $m[i] \approx m[i-1]$ in izpeljemo naslednjo enačbo 
 \begin{equation*}
 	m[i] = \frac{\sqrt{y[i]^2 + y[i-1]^2-2y[i]y[i-1]\cos{\phi}}}{\sin{\phi}}\text{,}
 \end{equation*}
@@ -150,7 +154,7 @@ Preostane še iskanje sinhronizacije v signalu, da najdemo začetek vsake vrstic
 	\caption{V zgornji sliki je demoduliran signal, v srednji signal koreliran s sinhronizacijo A, in v spodnji razlika med sosednjima vzorcema koreliranega signala s sinhronizacijo A.}
     \label{fig:sync_corr}
 \end{figure}
-V koreliranem rezultatu opazimo, da pričakovano, vrednost okoli točke, kjer se nahaja sinhronizacija narašča. V prvi iteraciji smo uporabili kot začetek vrstice maksimum korelacije v intervalu $2080$ pikslov. To je imelo kar precej težav, saj kot vidimo v generiranem signalu ima precej visoko vrednost tudi korelacija ob sinhronizaciji B. V izogib temu pogledamo razliko med sosednjima vrednostima. S tem dobimo v intervalu $2080$ pikslov dva vrhova. Prvi, ki je na sliki \ref{fig:sync_corr} jasno večji pripada sinhronizaciji A in drugi manjši pripada sinhronizaciji B. Tako lahko iz slike \ref{fig:sync_corr} razberemo, da se pri generiranem signalu kot pričakovano vrhovi ujemajo z intervalom $\SI{0.5}{\second}$. Na posnetem signalu pa opazimo, da je signal rahlo zamaknjen in se vsaka vrstica začne malo pred začetkom intervala $\SI{0.5}{\second}$ glede na čas v posnetku.
+V koreliranem rezultatu opazimo, da pričakovano, vrednost okoli točke, kjer se nahaja sinhronizacija narašča. V prvi iteraciji smo uporabili kot začetek vrstice maksimum korelacije v intervalu $2080$ pikslov. To je povzročilo kar precej težav, saj kot vidimo v generiranem signalu ima precej visoko vrednost tudi korelacija ob sinhronizaciji B. V izogib temu pogledamo razliko med sosednjima vrednostima. S tem dobimo v intervalu $2080$ pikslov dva vrhova. Prvi, ki je na Sliki \ref{fig:sync_corr} jasno večji pripada sinhronizaciji A in drugi manjši pripada sinhronizaciji B. Tako lahko iz Slike \ref{fig:sync_corr} razberemo, da se pri generiranem signalu kot pričakovano vrhovi ujemajo z intervalom $\SI{0.5}{\second}$. Na posnetem signalu pa opazimo, da je signal rahlo zamaknjen in se vsaka vrstica začne malo pred začetkom intervala $\SI{0.5}{\second}$ glede na čas v posnetku.
 
 Vsako vrstico nato pretvorimo v sliko tako, da normaliziramo glede na najmanjšo in največjo vrednostjo in porazdelimo vrednosti amplitude med $0$ in $255$ ter tako spremenimo signal v `grayscale` format slike. Običajno bi tu za translacijo amplitude v `grayscale` uporabili vrednosti iz telemetrije, ki bi določila točne vrednosti, a je za potrebe te naloge normalizacija delovala dovolj dobro.
 \newpage
@@ -161,16 +165,16 @@ Poglejmo še nekaj slik, ki jih na tak način dekodiramo iz posnetih signalov.
     \begin{subfigure}[b]{0.49\textwidth}
         \centering
         \includegraphics[width=\textwidth]{argentina.pdf}
-        \caption{Argentina}
+		\caption{Argentina; Vir izvornega signala: \cite{bernardi}}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.49\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{belgium.pdf}
-        \caption{Belgija}
+        \includegraphics[width=\textwidth]{thirdnoaa.pdf}
+		\caption{Neznana lokacija; Vir izvornega signala: \cite{0jk6}}
     \end{subfigure}
 
-	\caption{Signala posneta iz NOAA satelitov nad Argentino in Belgijo.}
+	\caption{Signala posneta iz NOAA satelitov nad Argentino in neznano lokacijo.}
     \label{fig:out_example}
 \end{figure}
 Še en primer posnet nad Slovenijo.
@@ -179,10 +183,9 @@ Poglejmo še nekaj slik, ki jih na tak način dekodiramo iz posnetih signalov.
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
         \includegraphics[width=\textwidth]{slovenia.pdf}
-        \caption{Argentina}
     \end{subfigure}
 	\caption{Signal posnet iz NOAA satelita nad Slovenijo.}
-    \label{fig:out_example}
+    \label{fig:out_example0}
 \end{figure}
 \newpage
 Za konec pa še nekaj enkodiranih in nato dekodiranih slik, kjer je slika v kanalu B inverz slike v kanalu A. 
@@ -191,14 +194,16 @@ Za konec pa še nekaj enkodiranih in nato dekodiranih slik, kjer je slika v kana
     \begin{subfigure}[b]{0.49\textwidth}
         \centering
         \includegraphics[width=\textwidth]{penguin.pdf}
+		\caption{Vir slike: \cite{penguin}}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.49\textwidth}
         \centering
         \includegraphics[width=\textwidth]{eye.pdf}
+		\caption{Vir slike: \cite{eye}}
     \end{subfigure}
 	\caption{Dekodirana generirana signala iz poljubne slike, kjer je v kanalu A originalna slika v kanalu B pa njen inverz.}
-    \label{fig:out_example}
+    \label{fig:out_example1}
 \end{figure}
 \section{Zaključek}
 V tem poročilu smo obravnavali koncepte potrebne za kodiranje in dekodiranje signala NOAA APT in si na koncu ogledali nekaj primerov slik, ki jih dobimo preko tega postopka. V nadaljevanju bi lahko implementirali še telemetrijski del podatkov in frekvenčno modulacijo oziroma demodulacijo. Lahko bi tudi poskusili razširiti format tako, da bi v vsakega izmed kanalov shranili podatek o eni barvi in ju nato v dekodiranju združili v eno sliko.
